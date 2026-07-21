@@ -7,14 +7,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ## [Unreleased]
 
 ### Added
-- CONTRIBUTING.md with contribution guidelines and local development instructions
-- CHANGELOG.md with Keep a Changelog format
-- GitHub CI workflow (typecheck + test + demo smoke tests on push/PR)
-- release-it configuration and scripts (check-changelog.sh, prep-release.sh)
-- LICENSE file (MIT)
-- CODEOWNERS for GitHub Actions workflow protection
-- npm package metadata (repository, bugs, homepage, engines, publishConfig)
-- prepublishOnly script to gate release on verification passing
+- Biome formatter configuration and format-check CI job (replaces Prettier)
+- Renovate dependency automation configuration
+- `format` and `format:check` npm scripts
+- Format check is part of `npm run verify` and runs in CI
+
+### Changed
+- All source files reformatted with Biome (style: space, 2-space indent, double quotes, semicolons, es5 trailing commas, 100 char line width)
+
+### Infrastructure
+- GitHub repo description and topics set for discoverability
 
 ## [0.1.0] - 2026-01-09
 

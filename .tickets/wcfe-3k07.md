@@ -1,6 +1,6 @@
 ---
 id: wcfe-3k07
-status: open
+status: closed
 deps: []
 links: []
 created: 2026-07-21T20:23:18Z
@@ -9,12 +9,12 @@ priority: 2
 assignee: crcatala
 parent: wcfe-a4pd
 tags: [formatting, tooling]
+closed: 2026-07-21T22:22:00Z
 ---
-# Add Prettier config and format checking
+# Add Biome config and format checking
 
-Add .prettierrc configuration file (semi: true, singleQuote: false, tabWidth: 2, trailingComma: es5, printWidth: 100 — matching raindrop-cli conventions). Update CI workflow to include a format check step. Optionally add a 'format' script to package.json.
+Added biome.json configuration (semicolons: always, quoteStyle: double, indentWidth: 2, indentStyle: space, trailingCommas: es5, lineWidth: 100). Added format and format:check npm scripts. Added format check job to CI workflow. Format check is also part of npm run verify.
 
 ## Acceptance Criteria
 
-.prettierrc at repo root. `npx prettier --check src/` passes on current codebase.
-
+`biome.json` at repo root. `npm run format:check` passes on current codebase. CI includes format check step. ✅
