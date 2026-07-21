@@ -7,16 +7,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ## [Unreleased]
 
 ### Added
-- Biome formatter configuration and format-check CI job (replaces Prettier)
-- Renovate dependency automation configuration
-- `format` and `format:check` npm scripts
-- Format check is part of `npm run verify` and runs in CI
+- MIT LICENSE file
+- npm package metadata (`repository`, `bugs`, `homepage`, `engines`, `publishConfig`) for public registry publishing
+- `CONTRIBUTING.md` with contribution guidelines, bug report instructions, and local dev setup
+- `RELEASING.md` with release workflow and versioning documentation (#4)
+- `format` and `format:check` npm scripts using Biome formatter
 
 ### Changed
-- All source files reformatted with Biome (style: space, 2-space indent, double quotes, semicolons, es5 trailing commas, 100 char line width)
-
-### Infrastructure
-- GitHub repo description and topics set for discoverability
+- README rewritten with install, usage, options, and development sections
 
 ## [0.1.0] - 2026-01-09
 
