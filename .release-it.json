@@ -19,7 +19,7 @@
   },
   "hooks": {
     "before:init": ["bash scripts/check-changelog.sh", "npm run verify"],
-    "after:bump": ["npm pack --dry-run"]
+    "after:bump": ["npm run build", "npm run test:package"]
   },
   "plugins": {
     "@release-it/keep-a-changelog": {
