@@ -8,7 +8,7 @@ on:
 
 jobs:
   typecheck:
-    runs-on: ubuntu-latest
+    runs-on: ubicloud-standard-2
 
     steps:
       - name: Checkout code
@@ -27,7 +27,7 @@ jobs:
         run: npm run typecheck
 
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubicloud-standard-2
 
     steps:
       - name: Checkout code
@@ -46,7 +46,7 @@ jobs:
         run: npm test
 
   demo:
-    runs-on: ubuntu-latest
+    runs-on: ubicloud-standard-2
 
     steps:
       - name: Checkout code
