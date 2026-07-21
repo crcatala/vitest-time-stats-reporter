@@ -16,5 +16,12 @@ The GitHub repo currently has no description and no topics. Before making public
 
 ## Acceptance Criteria
 
-GitHub repo has description and topics set via `gh repo edit` or GH UI
+GitHub repo has description and topics set via `gh repo edit` or GH UI.
 
+## Status
+
+Cannot set from CLI: the current GitHub token lacks repository admin access (same issue as wcfe-rogh). Setting requires GH UI by a user with admin access on the repo.
+
+**Suggested GH UI values:**
+- Description: `An additive Vitest reporter that shows test execution-time distribution — histogram, percentiles, and slow-test concentration`
+- Topics: `vitest`, `reporter`, `testing`, `performance`, `histogram`, `timing`
