@@ -7,6 +7,20 @@
   "author": "Chris Catala",
   "type": "module",
   "files": ["src"],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/crcatala/vitest-time-stats-reporter.git"
+  },
+  "bugs": {
+    "url": "https://github.com/crcatala/vitest-time-stats-reporter/issues"
+  },
+  "homepage": "https://github.com/crcatala/vitest-time-stats-reporter#readme",
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "exports": {
     ".": {
       "import": "./src/reporter.js",
@@ -23,10 +37,16 @@
     "demo": "vitest run --config vitest.demo.config.ts",
     "demo:json": "vitest run --config vitest.demo-json.config.ts",
     "typecheck": "tsc --noEmit",
-    "verify": "npm run typecheck && npm test && npm run demo && npm run demo:json"
+    "verify": "npm run typecheck && npm test && npm run demo && npm run demo:json",
+    "prepublishOnly": "npm run verify",
+    "release": "release-it",
+    "release:dry": "release-it --dry-run --no-npm --no-github",
+    "release:prep": "bash scripts/prep-release.sh"
   },
   "devDependencies": {
+    "@release-it/keep-a-changelog": "^7.0.0",
     "@types/node": "^24.0.0",
+    "release-it": "^19.0.0",
     "typescript": "^5.0.0",
     "vitest": "^4.1.10"
   }

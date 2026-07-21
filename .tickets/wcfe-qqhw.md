@@ -1,6 +1,6 @@
 ---
 id: wcfe-qqhw
-status: open
+status: closed
 deps: []
 links: []
 created: 2026-07-21T20:23:17Z
