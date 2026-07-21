@@ -1,0 +1,33 @@
+{
+  "name": "vitest-time-stats-reporter",
+  "version": "0.1.0",
+  "description": "An additive Vitest reporter that shows test execution-time distribution — histogram, percentiles, and slow-test concentration",
+  "keywords": ["vitest", "reporter", "test", "timing", "histogram", "performance"],
+  "license": "MIT",
+  "author": "Chris Catala",
+  "type": "module",
+  "files": ["src"],
+  "exports": {
+    ".": {
+      "import": "./src/reporter.js",
+      "types": "./src/reporter.ts"
+    },
+    "./timing-stats": {
+      "import": "./src/timing-stats.js",
+      "types": "./src/timing-stats.ts"
+    }
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "demo": "vitest run --config vitest.demo.config.ts",
+    "demo:json": "vitest run --config vitest.demo-json.config.ts",
+    "typecheck": "tsc --noEmit",
+    "verify": "npm run typecheck && npm test && npm run demo && npm run demo:json"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "^5.0.0",
+    "vitest": "^4.1.10"
+  }
+}
