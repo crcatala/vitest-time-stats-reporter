@@ -85,6 +85,12 @@ npm install
 npm run verify   # typecheck + unit tests + demos
 ```
 
+## See Also
+
+- [RELEASING.md](RELEASING.md) — release workflow and versioning
+- [CHANGELOG.md](CHANGELOG.md) — version history
+- [CONTRIBUTING.md](CONTRIBUTING.md) — contribution guidelines
+
 ## License
 
 MIT
