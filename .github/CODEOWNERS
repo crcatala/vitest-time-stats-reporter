@@ -1,2 +1,2 @@
-# Require maintainer review for workflow changes
+# Ownership for workflow changes. Configure branch protection to require Code Owner review.
 /.github/workflows/ @crcatala

@@ -6,8 +6,8 @@ set -e
 # Extract content between [Unreleased] and next version header
 content=$(awk '/^## \[Unreleased\]/{found=1;next} /^## \[/{exit} found{print}' CHANGELOG.md)
 
-# Check if there's any actual content (### headers like Added, Fixed, etc.)
-if ! echo "$content" | grep -q '^### '; then
+# Require an actual list entry, not merely an empty category heading.
+if ! echo "$content" | grep -qE '^[[:space:]]*-[[:space:]]+[^[:space:]]'; then
   echo "Error: No entries in [Unreleased] section of CHANGELOG.md"
   echo ""
   echo "Add your changes before releasing:"
