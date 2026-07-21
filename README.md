@@ -78,16 +78,6 @@ The JSON schema is versioned (`schemaVersion: 1`) and includes all fields from t
 
 The reporter implements Vitest's `Reporter` interface and hooks into `onTestRunEnd` to collect every completed test case's name, file, and duration. All aggregation and formatting is done by runner-agnostic pure functions in `src/timing-stats.ts`, which are independently unit-tested.
 
-## v1 scope
-
-- Configurable execution-time histogram
-- Test count and total test execution time
-- Percentiles: p50, p90, p99, and max
-- Ranked slowest test cases
-- Slow-test concentration (count/percentage above threshold, share of execution time)
-- Compact JSON output with versioned schema
-- Zero runtime dependencies
-
 ## Development
 
 ```bash
