@@ -35,4 +35,5 @@ coverage/
 *.tsbuildinfo
 
 # Reports
-reports/
+reports/*
+!reports/.gitkeep

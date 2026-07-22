@@ -1,5 +1,9 @@
 # vitest-time-stats-reporter
 
+[![npm version](https://img.shields.io/npm/v/vitest-time-stats-reporter?style=flat-square)](https://www.npmjs.com/package/vitest-time-stats-reporter)
+[![CI](https://img.shields.io/github/actions/workflow/status/crcatala/vitest-time-stats-reporter/ci.yml?branch=main&style=flat-square&label=CI)](https://github.com/crcatala/vitest-time-stats-reporter/actions/workflows/ci.yml)
+[![license](https://img.shields.io/npm/l/vitest-time-stats-reporter?style=flat-square)](LICENSE)
+
 An **additive** Vitest reporter that answers a question built-in slow-test highlighting does not: **what is the shape of this suite's test execution-time distribution?**
 
 It composes with existing terminal and CI reporters rather than replacing them. Just add it to your `reporters` array alongside `'default'`, `'verbose'`, `'json'`, or any other reporter.

@@ -1,10 +1,11 @@
 ---
 id: wcfe-alya
-status: open
+status: closed
 deps: []
 links: [wcfe-kpmd]
 created: 2026-07-21T20:54:00Z
 type: task
+closed: 2026-07-22T09:59:00Z
 priority: 3
 assignee: cc-vps
 parent: wcfe-a4pd
