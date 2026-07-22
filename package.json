@@ -61,7 +61,7 @@
     "@release-it/keep-a-changelog": "^7.0.0",
     "@types/node": "^24.0.0",
     "release-it": "^20.2.1",
-    "typescript": "^5.0.0",
+    "typescript": "^7.0.0",
     "vitest": "^4.1.10"
   },
   "dependencies": {
