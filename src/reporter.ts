@@ -1,5 +1,5 @@
 import { mkdirSync, writeFileSync } from "node:fs";
-import { dirname } from "node:path";
+import { dirname, isAbsolute, relative } from "node:path";
 import type { Reporter, TestModule } from "vitest/node";
 import {
   createTimingStats,
@@ -23,9 +23,11 @@ export type TimeStatsReporterOptions = TimingStatsOptions &
  */
 export default class TimeStatsReporter implements Reporter {
   private readonly options: TimeStatsReporterOptions;
+  private readonly projectRoot: string;
 
   constructor(options: TimeStatsReporterOptions = {}) {
     this.options = options;
+    this.projectRoot = process.cwd();
   }
 
   onTestRunEnd(testModules: ReadonlyArray<TestModule>): void {
@@ -35,9 +37,13 @@ export default class TimeStatsReporter implements Reporter {
       for (const testCase of module.children.allTests()) {
         const diagnostic = testCase.diagnostic();
         if (!diagnostic) continue;
+        const rawFile: string = module.relativeModuleId ?? module.moduleId;
+        // Display the path relative to the project root so the slowest-tests list
+        // doesn't flood the terminal with long absolute paths.
+        const file = isAbsolute(rawFile) ? relative(this.projectRoot, rawFile) : rawFile;
         tests.push({
           name: testCase.fullName,
-          file: module.relativeModuleId ?? module.moduleId,
+          file,
           durationMs: diagnostic.duration,
         });
       }
