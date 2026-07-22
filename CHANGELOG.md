@@ -8,8 +8,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ### Added
 
-- Execution-time split bars that compare the slow-test count share with its share of total execution time
-- Per-test execution-time mini-bars in the slowest-test ranking
+- Execution-time concentration visualization showing slow-test count share vs. total execution time share (#10)
+- Per-test execution-time mini-bars in the slowest-test ranking (#10)
+- Color-coded execution-time bar fills by severity threshold (#10)
+- Execution time split durations displayed alongside bars (#10)
+
+### Fixed
+
+- Corrected edge cases in execution time split calculations (#10)
+- Absolute test file paths are now properly relativized in the slowest-tests display
+- Absolute path detection now works across all platforms (Windows, Linux, macOS)
 
 ## [0.2.0] - 2026-07-22
 
