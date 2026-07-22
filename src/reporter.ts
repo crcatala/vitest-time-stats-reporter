@@ -1,5 +1,5 @@
 import { mkdirSync, writeFileSync } from "node:fs";
-import { dirname, relative, resolve } from "node:path";
+import { dirname, isAbsolute, relative } from "node:path";
 import type { Reporter, TestModule } from "vitest/node";
 import {
   createTimingStats,
@@ -40,9 +40,7 @@ export default class TimeStatsReporter implements Reporter {
         const rawFile: string = module.relativeModuleId ?? module.moduleId;
         // Display the path relative to the project root so the slowest-tests list
         // doesn't flood the terminal with long absolute paths.
-        const file = resolve(rawFile) === rawFile
-          ? relative(this.projectRoot, rawFile)
-          : rawFile;
+        const file = isAbsolute(rawFile) ? relative(this.projectRoot, rawFile) : rawFile;
         tests.push({
           name: testCase.fullName,
           file,
