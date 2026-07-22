@@ -8,10 +8,15 @@ const projectDir = resolve(import.meta.dirname, "..");
 const jsonOutputFile = resolve(projectDir, "reports", "time-stats.json");
 const textOutputFile = resolve(projectDir, "reports", "time-stats.txt");
 
-function runVitest(configFile: string): { stdout: string } {
+function runVitest(configFile: string, env?: NodeJS.ProcessEnv): { stdout: string } {
+  const childEnv = { ...process.env, ...env };
+  for (const [key, value] of Object.entries(childEnv)) {
+    if (value === undefined) delete childEnv[key];
+  }
+
   const stdout = execSync(
     `"${resolve(projectDir, "node_modules", ".bin", "vitest")}" run --config "${resolve(projectDir, configFile)}"`,
-    { cwd: projectDir, encoding: "utf-8", timeout: 30_000 }
+    { cwd: projectDir, encoding: "utf-8", env: childEnv, timeout: 30_000 }
   );
   return { stdout };
 }
@@ -47,6 +52,43 @@ describe("subprocess integration", () => {
     expect(report).toBe(stripVTControlCharacters(report));
     expect(report).toContain("Time Stats: 3 tests;");
     expect(report).toContain("Percentiles:");
+    expect(report).not.toContain("empty bins");
+
+    const histogramBins = [...report.matchAll(/^\s*(\d+)-(\d+)ms\s+.*\s(\d+)\s*$/gm)].map(
+      ([, startMs, endMs, count]) => ({
+        startMs: Number(startMs),
+        endMs: Number(endMs),
+        count: Number(count),
+      })
+    );
+    expect(
+      histogramBins.some(
+        (bin, index) =>
+          bin.count === 0 &&
+          histogramBins[index + 1]?.count === 0 &&
+          bin.endMs === histogramBins[index + 1]?.startMs
+      )
+    ).toBe(true);
+  });
+
+  it("honors automatic color environment controls", () => {
+    const redirected = runVitest("vitest.demo-color.config.ts", {
+      FORCE_COLOR: undefined,
+      NO_COLOR: undefined,
+    });
+    expect(redirected.stdout).not.toContain("\u001B[");
+
+    const colored = runVitest("vitest.demo-color.config.ts", {
+      FORCE_COLOR: "1",
+      NO_COLOR: undefined,
+    });
+    expect(colored.stdout).toContain("\u001B[1mTime Stats:");
+
+    const noColor = runVitest("vitest.demo-color.config.ts", {
+      FORCE_COLOR: undefined,
+      NO_COLOR: "1",
+    });
+    expect(noColor.stdout).not.toContain("\u001B[");
   });
 
   it("writes a valid JSON artifact in JSON mode", () => {

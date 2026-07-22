@@ -7,6 +7,8 @@ export default defineConfig({
       [
         "./src/reporter.ts",
         {
+          binSizeMs: 10,
+          histogramBins: "all",
           outputFile: "reports/time-stats.txt",
         },
       ],

@@ -15,6 +15,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 - Added visual spacing, a slow-test count badge, wider histogram bars, and severity colors to terminal output
 
+### Fixed
+
+- Fall back to absolute test file paths when reporting with Vitest versions before v4
 ## [0.1.0] - 2026-07-21
 
 ### Added
