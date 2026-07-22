@@ -84,6 +84,8 @@ The JSON schema is versioned (`schemaVersion: 1`) and includes all fields from t
 | `slowThresholdMs` | 500 | Tests above this duration are considered "slow" |
 | `slowestTestsCount` | 5 | Number of slowest tests to rank |
 | `histogramBins` | `'collapse'` | `'collapse'` combines runs of empty bins; `'all'` renders every bin |
+| `histogramFillChar` | `'█'` | Character for the filled portion of each histogram bar. Common pairings: `'■'` with empty char `'□'`, `'▮'` with empty char `'▯'` |
+| `histogramEmptyChar` | `'·'` | Character for the empty portion of each histogram bar. Common pairings: `'□'` with fill char `'■'`, `'▯'` with fill char `'▮'` |
 | `output` | `'text'` | `'text'` for terminal output, `'json'` for machine-readable |
 | `outputFile` | — | Write output to a file instead of stdout |
 
