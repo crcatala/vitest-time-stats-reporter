@@ -297,12 +297,14 @@ export function formatTimingStats(
   lines.push("", colorForDuration(stats.slow.executionPercentage, 50, slowMessage, colors));
 
   const slowExecutionMs = (stats.slow.executionPercentage / 100) * stats.totalExecutionMs;
+  const fastExecutionPercentage =
+    stats.totalExecutionMs === 0 ? 0 : 100 - stats.slow.executionPercentage;
   const timeSplitRows = [
     ["slow", stats.slow.percentage, stats.slow.executionPercentage, slowExecutionMs],
     [
       "fast",
       100 - stats.slow.percentage,
-      100 - stats.slow.executionPercentage,
+      fastExecutionPercentage,
       stats.totalExecutionMs - slowExecutionMs,
     ],
   ] as const;

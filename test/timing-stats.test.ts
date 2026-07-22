@@ -92,6 +92,9 @@ describe("createTimingStats", () => {
 
     expect(report).not.toContain("NaN");
     expect(report).toContain(
+      "fast (100% of tests)  ······························  0.0% of time (0ms)"
+    );
+    expect(report).toContain(
       "1.     0ms  ······························   0.0%  fixture.test.ts > instant"
     );
   });

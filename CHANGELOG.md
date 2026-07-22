@@ -7,7 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ## [Unreleased]
 
 ### Added
-+
+
 - Execution-time split bars that compare the slow-test count share with its share of total execution time
 - Per-test execution-time mini-bars in the slowest-test ranking
 
