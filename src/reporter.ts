@@ -35,7 +35,7 @@ export default class TimeStatsReporter implements Reporter {
         if (!diagnostic) continue;
         tests.push({
           name: testCase.fullName,
-          file: module.relativeModuleId,
+          file: module.relativeModuleId ?? module.moduleId,
           durationMs: diagnostic.duration,
         });
       }
