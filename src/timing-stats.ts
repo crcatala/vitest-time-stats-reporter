@@ -21,6 +21,21 @@ export type FormatTimingStatsOptions = {
   histogramBins?: HistogramBins;
   /** Enable ANSI styles. Defaults to the terminal's detected color support. */
   color?: boolean;
+  /**
+   * Character used for the filled portion of each histogram bar.
+   * Defaults to "█" (U+2588 Full Block).
+   * Other common pairings: "■" (filled square) / "□" (empty square),
+   * "▮" (filled square) / "▯" (empty square).
+   * Both bar characters must be single printable characters; an invalid value resets both to defaults.
+   */
+  histogramFillChar?: string;
+  /**
+   * Character used for the empty portion of each histogram bar.
+   * Defaults to "·" (U+00B7 Middle Dot).
+   * Other common pairings: "□" with fill char "■", "▯" with fill char "▮".
+   * Both bar characters must be single printable characters; an invalid value resets both to defaults.
+   */
+  histogramEmptyChar?: string;
 };
 
 export type HistogramBin = {
@@ -134,6 +149,12 @@ function formatPercent(value: number): string {
 type DisplayHistogramBin = HistogramBin & { emptyBinCount?: number };
 
 const histogramBarWidth = 30;
+const defaultHistogramFillChar = "\u2588";
+const defaultHistogramEmptyChar = "\u00B7";
+
+function isValidHistogramChar(value: unknown): value is string {
+  return typeof value === "string" && value.length === 1 && !/[\p{C}\p{M}]/u.test(value);
+}
 
 function collapseEmptyBins(histogram: HistogramBin[]): DisplayHistogramBin[] {
   const displayed: DisplayHistogramBin[] = [];
@@ -180,11 +201,20 @@ function colorForDuration(
 
 export function formatTimingStats(
   stats: TimingStats,
-  { histogramBins = "collapse", color }: FormatTimingStatsOptions = {}
+  {
+    histogramBins = "collapse",
+    color,
+    histogramFillChar = defaultHistogramFillChar,
+    histogramEmptyChar = defaultHistogramEmptyChar,
+  }: FormatTimingStatsOptions = {}
 ): string {
   if (histogramBins !== "collapse" && histogramBins !== "all") {
     throw new Error('histogramBins must be either "collapse" or "all"');
   }
+  const [fillChar, emptyChar] =
+    isValidHistogramChar(histogramFillChar) && isValidHistogramChar(histogramEmptyChar)
+      ? [histogramFillChar, histogramEmptyChar]
+      : [defaultHistogramFillChar, defaultHistogramEmptyChar];
 
   const colors = picocolors.createColors(color);
   if (stats.testCount === 0) {
@@ -223,8 +253,8 @@ export function formatTimingStats(
   for (const bin of histogram) {
     const label = `${bin.startMs}-${bin.endMs}ms`.padStart(widestBinLabel);
     const filledBarLength = Math.round((bin.percentage / 100) * histogramBarWidth);
-    const bar = `${colors.cyan("█".repeat(filledBarLength))}${colors.dim(
-      "·".repeat(histogramBarWidth - filledBarLength)
+    const bar = `${colors.cyan(fillChar.repeat(filledBarLength))}${colors.dim(
+      emptyChar.repeat(histogramBarWidth - filledBarLength)
     )}`;
     const percentage = formatPercent(bin.percentage).padStart(5);
     const binSuffix = bin.emptyBinCount ? colors.dim(` (${bin.emptyBinCount} empty bins)`) : "";

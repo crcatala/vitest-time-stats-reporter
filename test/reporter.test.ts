@@ -8,25 +8,26 @@ afterEach(() => {
 });
 
 describe("TimeStatsReporter", () => {
+  const projectRoot = resolve("project");
+  const moduleId = resolve(projectRoot, "tests", "fixture.test.ts").replaceAll("\\", "/");
+  const olderVitestModule = {
+    relativeModuleId: undefined,
+    moduleId,
+    children: {
+      allTests: () => [
+        {
+          fullName: "suite > test",
+          diagnostic: () => ({ duration: 100 }),
+        },
+      ],
+    },
+  } as unknown as TestModule;
+
   it("relativizes an absolute moduleId against the project root when relativeModuleId is absent", () => {
-    const projectRoot = resolve("project");
-    const moduleId = resolve(projectRoot, "tests", "fixture.test.ts").replaceAll("\\", "/");
     vi.spyOn(process, "cwd").mockReturnValue(projectRoot);
     const write = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
-    const mod = {
-      relativeModuleId: undefined,
-      moduleId,
-      children: {
-        allTests: () => [
-          {
-            fullName: "suite > test",
-            diagnostic: () => ({ duration: 100 }),
-          },
-        ],
-      },
-    } as unknown as TestModule;
 
-    new TimeStatsReporter().onTestRunEnd([mod]);
+    new TimeStatsReporter().onTestRunEnd([olderVitestModule]);
 
     const output = write.mock.calls[0]?.[0] as string;
     const relativeModuleId = relative(projectRoot, moduleId);
@@ -57,28 +58,24 @@ describe("TimeStatsReporter", () => {
   });
 
   it("applies path relativization in JSON output as well", () => {
-    const projectRoot = resolve("project");
-    const moduleId = resolve(projectRoot, "tests", "fixture.test.ts").replaceAll("\\", "/");
     vi.spyOn(process, "cwd").mockReturnValue(projectRoot);
     const write = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
-    const mod = {
-      relativeModuleId: undefined,
-      moduleId,
-      children: {
-        allTests: () => [
-          {
-            fullName: "suite > test",
-            diagnostic: () => ({ duration: 100 }),
-          },
-        ],
-      },
-    } as unknown as TestModule;
 
-    new TimeStatsReporter({ output: "json" }).onTestRunEnd([mod]);
+    new TimeStatsReporter({ output: "json" }).onTestRunEnd([olderVitestModule]);
 
     const output = write.mock.calls[0]?.[0] as string;
     const json = JSON.parse(output);
     expect(json.slowest[0].file).toBe(relative(projectRoot, moduleId));
     expect(json.slowest[0].file).not.toBe(moduleId);
+  });
+
+  it("passes custom histogram characters to text output", () => {
+    const write = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
+
+    new TimeStatsReporter({ histogramFillChar: "#", histogramEmptyChar: "-" }).onTestRunEnd([
+      olderVitestModule,
+    ]);
+
+    expect(write).toHaveBeenCalledWith(expect.stringContaining("#".repeat(30)));
   });
 });

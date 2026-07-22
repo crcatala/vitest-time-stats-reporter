@@ -10,7 +10,7 @@ import {
 } from "./timing-stats.js";
 
 export type TimeStatsReporterOptions = TimingStatsOptions &
-  Pick<FormatTimingStatsOptions, "histogramBins"> & {
+  Pick<FormatTimingStatsOptions, "histogramBins" | "histogramFillChar" | "histogramEmptyChar"> & {
     /** `text` is for terminals; `json` is a compact machine/agent-readable summary. */
     output?: "text" | "json";
     /** Write the report to a separate artifact rather than the shared reporter stream. */
@@ -55,6 +55,8 @@ export default class TimeStatsReporter implements Reporter {
         ? `${JSON.stringify({ schemaVersion: 1, kind: "vitest-time-stats", ...stats }, (_key, value) => (typeof value === "number" ? Math.round(value * 10) / 10 : value))}\n`
         : formatTimingStats(stats, {
             histogramBins: this.options.histogramBins,
+            histogramFillChar: this.options.histogramFillChar,
+            histogramEmptyChar: this.options.histogramEmptyChar,
             color: this.options.outputFile ? false : undefined,
           });
 

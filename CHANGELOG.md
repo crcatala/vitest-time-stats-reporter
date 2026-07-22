@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-07-22
+
+### Added
+- `histogramFillChar` and `histogramEmptyChar` options for customizing histogram bar characters, with sensible fallbacks to defaults (█ and ·) (#7)
+
+### Fixed
+- Histogram bar characters are now properly validated; empty-string values fall back to defaults instead of producing broken output (#7)
+
 ## [0.1.1] - 2026-07-22
 
 ### Added
