@@ -100,4 +100,82 @@ describe("createTimingStats", () => {
       "no completed test cases"
     );
   });
+
+  describe("bar character customization", () => {
+    it("defaults to full block (█) and middle dot (·)", () => {
+      const report = formatTimingStats(createTimingStats(fixture), { color: false });
+      // The first bin (0-100ms) has 50% = 15 filled chars out of 30
+      expect(report).toContain("\u2588".repeat(15));
+      expect(report).toContain("\u00B7".repeat(15));
+    });
+
+    it("accepts custom fill and empty chars", () => {
+      const report = formatTimingStats(createTimingStats(fixture), {
+        histogramFillChar: "\u25A0",
+        histogramEmptyChar: "\u25A1",
+        color: false,
+      });
+      // 0-100ms bin: 50% fill = 15 characters
+      expect(report).toContain("\u25A0".repeat(15));
+      expect(report).toContain("\u25A1".repeat(15));
+    });
+
+    it("accepts the ▮/▯ pairing", () => {
+      const report = formatTimingStats(createTimingStats(fixture), {
+        histogramFillChar: "\u25AE",
+        histogramEmptyChar: "\u25AF",
+        color: false,
+      });
+      // 0-100ms bin: 50% fill = 15 characters
+      expect(report).toContain("\u25AE".repeat(15));
+      expect(report).toContain("\u25AF".repeat(15));
+    });
+
+    it("resets both chars to defaults when either configured value is invalid", () => {
+      const stats = createTimingStats(fixture);
+      const defaultReport = formatTimingStats(stats, { color: false });
+
+      for (const options of [
+        { histogramFillChar: "", histogramEmptyChar: "-" },
+        { histogramFillChar: "#", histogramEmptyChar: "" },
+        { histogramFillChar: "##", histogramEmptyChar: "-" },
+        { histogramFillChar: "\n", histogramEmptyChar: "-" },
+      ]) {
+        expect(formatTimingStats(stats, { ...options, color: false })).toBe(defaultReport);
+      }
+    });
+
+    it("works with single-char ASCII symbols", () => {
+      const report = formatTimingStats(createTimingStats(fixture), {
+        histogramFillChar: "#",
+        histogramEmptyChar: "-",
+        color: false,
+      });
+      expect(report).toContain("#".repeat(15));
+      expect(report).toContain("-".repeat(15));
+    });
+
+    it("custom chars appear in all bins proportionally", () => {
+      const report = formatTimingStats(createTimingStats(fixture, { binSizeMs: 100 }), {
+        histogramFillChar: "\u25A0",
+        histogramEmptyChar: "\u25A1",
+        color: false,
+      });
+      // 0-100ms: 50% = 15 filled, 15 empty
+      expect(report).toContain("\u25A0".repeat(15) + "\u25A1".repeat(15));
+      // 100-200ms: 25% = 7.5 ~ 8 filled, 22 empty
+      expect(report).toContain("\u25A0".repeat(8) + "\u25A1".repeat(22));
+      // 200-300ms: 25% = 7.5 ~ 8 filled, 22 empty
+      expect(report).toContain("\u25A0".repeat(8) + "\u25A1".repeat(22));
+    });
+
+    it("preserves defaults when only one custom char is provided", () => {
+      const report = formatTimingStats(createTimingStats(fixture), {
+        histogramFillChar: "#",
+        color: false,
+      });
+      expect(report).toContain("#".repeat(15));
+      expect(report).toContain("\u00B7".repeat(15));
+    });
+  });
 });
