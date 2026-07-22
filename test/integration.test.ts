@@ -73,18 +73,21 @@ describe("subprocess integration", () => {
 
   it("honors automatic color environment controls", () => {
     const redirected = runVitest("vitest.demo-color.config.ts", {
+      CI: undefined,
       FORCE_COLOR: undefined,
       NO_COLOR: undefined,
     });
     expect(redirected.stdout).not.toContain("\u001B[");
 
     const colored = runVitest("vitest.demo-color.config.ts", {
+      CI: undefined,
       FORCE_COLOR: "1",
       NO_COLOR: undefined,
     });
     expect(colored.stdout).toContain("\u001B[1mTime Stats:");
 
     const noColor = runVitest("vitest.demo-color.config.ts", {
+      CI: undefined,
       FORCE_COLOR: undefined,
       NO_COLOR: "1",
     });
