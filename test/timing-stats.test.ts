@@ -49,10 +49,17 @@ describe("createTimingStats", () => {
       ["Percentiles:", "  p50   99ms", "  p90  201ms", "  p99  201ms", "  max  201ms"].join("\n")
     );
     expect(report).toContain("Slow tests: 1/4 over 100ms");
-    expect(report).toContain("1.   201ms  fixture.test.ts > slow");
+    expect(report).toContain("Execution time split:");
+    expect(report).toContain("slow (25% of tests)");
+    expect(report).toContain("49% of time (201ms)");
+    expect(report).toContain("Slowest tests' share of total execution:");
+    expect(report).toContain(
+      "1.   201ms  ███████████████···············    49%  fixture.test.ts > slow"
+    );
     expect(report).toContain("\n\nDuration distribution:");
     expect(report).toContain("\n\nPercentiles:");
-    expect(report).toContain("\n\nSlowest tests:");
+    expect(report).toContain("\n\nExecution time split:");
+    expect(report).toContain("\n\nSlowest tests' share of total execution:");
   });
 
   it("collapses runs of empty histogram bins by default and can show every bin", () => {
@@ -75,6 +82,68 @@ describe("createTimingStats", () => {
     expect(allBins).toContain("300-400ms");
     expect(allBins).toContain("400-500ms");
     expect(allBins).not.toContain("empty bins");
+  });
+
+  it("renders zero-duration tests without NaN percentages", () => {
+    const report = formatTimingStats(
+      createTimingStats([{ name: "instant", file: "fixture.test.ts", durationMs: 0 }]),
+      { color: false }
+    );
+
+    expect(report).not.toContain("NaN");
+    expect(report).toContain(
+      "fast (100% of tests)  ······························  0.0% of time (0ms)"
+    );
+    expect(report).toContain(
+      "1.     0ms  ······························   0.0%  fixture.test.ts > instant"
+    );
+  });
+
+  it("aligns execution-time split bars despite unequal count labels", () => {
+    const stats = createTimingStats(
+      Array.from({ length: 11 }, (_, index) => ({
+        name: `test ${index}`,
+        file: "fixture.test.ts",
+        durationMs: index === 0 ? 1_000 : 10,
+      })),
+      { slowThresholdMs: 500 }
+    );
+    const report = formatTimingStats(stats, {
+      color: false,
+      histogramFillChar: "#",
+      histogramEmptyChar: "-",
+    });
+    const slowLine = report.split("\n").find((line) => line.startsWith("  slow"))!;
+    const fastLine = report.split("\n").find((line) => line.startsWith("  fast"))!;
+
+    expect(slowLine.indexOf("#")).toBe(fastLine.indexOf("#"));
+  });
+
+  it("uses configured bar characters consistently across every chart", () => {
+    const report = formatTimingStats(createTimingStats(fixture, { slowThresholdMs: 100 }), {
+      color: false,
+      histogramFillChar: "#",
+      histogramEmptyChar: "-",
+    });
+
+    expect(report).toContain("###############---------------");
+    expect(report).toContain(
+      "slow (25% of tests)  ###############---------------  49% of time (201ms)"
+    );
+    expect(report).toContain(
+      "1.   201ms  ###############---------------    49%  fixture.test.ts > slow"
+    );
+  });
+
+  it("colors severity-bearing fill bars to match their adjacent statistics", () => {
+    const report = formatTimingStats(createTimingStats(fixture, { slowThresholdMs: 100 }), {
+      color: true,
+    });
+
+    // The 201ms slowest test is red and occupies 49% of total execution time.
+    expect(report).toContain(`\u001B[31m${"█".repeat(15)}\u001B[39m`);
+    // Histogram and fast-split fills remain neutral cyan.
+    expect(report).toContain(`\u001B[36m${"█".repeat(15)}\u001B[39m`);
   });
 
   it("uses ANSI styling only when colors are enabled", () => {
