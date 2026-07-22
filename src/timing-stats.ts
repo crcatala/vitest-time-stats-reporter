@@ -296,9 +296,15 @@ export function formatTimingStats(
   const slowMessage = `${colors.bold("Slow tests:")} ${slowSummary}`;
   lines.push("", colorForDuration(stats.slow.executionPercentage, 50, slowMessage, colors));
 
+  const slowExecutionMs = (stats.slow.executionPercentage / 100) * stats.totalExecutionMs;
   const timeSplitRows = [
-    ["slow", stats.slow.percentage, stats.slow.executionPercentage],
-    ["fast", 100 - stats.slow.percentage, 100 - stats.slow.executionPercentage],
+    ["slow", stats.slow.percentage, stats.slow.executionPercentage, slowExecutionMs],
+    [
+      "fast",
+      100 - stats.slow.percentage,
+      100 - stats.slow.executionPercentage,
+      stats.totalExecutionMs - slowExecutionMs,
+    ],
   ] as const;
   const widestTimeSplitLabel = Math.max(
     ...timeSplitRows.map(
@@ -306,14 +312,14 @@ export function formatTimingStats(
     )
   );
   lines.push("", colors.bold("Execution time split:"));
-  for (const [kind, testPercentage, executionPercentage] of timeSplitRows) {
+  for (const [kind, testPercentage, executionPercentage, executionMs] of timeSplitRows) {
     const label = `${kind} (${formatPercent(testPercentage)} of tests)`.padEnd(
       widestTimeSplitLabel
     );
     const fillColor =
       kind === "slow" ? severityColor(executionPercentage, 50, colors) : colors.cyan;
     lines.push(
-      `  ${label}  ${formatBar(executionPercentage, fillChar, emptyChar, colors, fillColor)}  ${formatPercent(executionPercentage)} of time`
+      `  ${label}  ${formatBar(executionPercentage, fillChar, emptyChar, colors, fillColor)}  ${formatPercent(executionPercentage)} of time (${formatMilliseconds(executionMs)})`
     );
   }
 

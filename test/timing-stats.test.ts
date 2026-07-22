@@ -51,7 +51,7 @@ describe("createTimingStats", () => {
     expect(report).toContain("Slow tests: 1/4 over 100ms");
     expect(report).toContain("Execution time split:");
     expect(report).toContain("slow (25% of tests)");
-    expect(report).toContain("49% of time");
+    expect(report).toContain("49% of time (201ms)");
     expect(report).toContain("Slowest tests' share of total execution:");
     expect(report).toContain(
       "1.   201ms  ███████████████···············    49%  fixture.test.ts > slow"
@@ -124,7 +124,9 @@ describe("createTimingStats", () => {
     });
 
     expect(report).toContain("###############---------------");
-    expect(report).toContain("slow (25% of tests)  ###############---------------  49% of time");
+    expect(report).toContain(
+      "slow (25% of tests)  ###############---------------  49% of time (201ms)"
+    );
     expect(report).toContain(
       "1.   201ms  ###############---------------    49%  fixture.test.ts > slow"
     );

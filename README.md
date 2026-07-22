@@ -54,8 +54,8 @@ Percentiles:
 Slow tests: 2/42 over 500ms (4.8% of tests; 26% of execution time)
 
 Execution time split:
-  slow (4.8% of tests)  ████████····················  26% of time
-  fast (95% of tests)   ██████████████████████········  74% of time
+  slow (4.8% of tests)  ████████····················  26% of time (1.76s)
+  fast (95% of tests)   ██████████████████████········  74% of time (5.02s)
 
 Slowest tests' share of total execution:
   1.   890ms  ████··························    13%  tests/auth.test.ts > Auth > login with invalid credentials retries
