@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-07-22
+
 ### Added
 - Visualize execution-time concentration in bar charts (#10)
 - Show execution time split durations (#10)
