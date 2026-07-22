@@ -10,10 +10,7 @@ import {
 } from "./timing-stats.js";
 
 export type TimeStatsReporterOptions = TimingStatsOptions &
-  Pick<
-    FormatTimingStatsOptions,
-    "histogramBins" | "histogramFillChar" | "histogramEmptyChar"
-  > & {
+  Pick<FormatTimingStatsOptions, "histogramBins" | "histogramFillChar" | "histogramEmptyChar"> & {
     /** `text` is for terminals; `json` is a compact machine/agent-readable summary. */
     output?: "text" | "json";
     /** Write the report to a separate artifact rather than the shared reporter stream. */

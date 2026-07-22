@@ -89,6 +89,8 @@ The JSON schema is versioned (`schemaVersion: 1`) and includes all fields from t
 | `output` | `'text'` | `'text'` for terminal output, `'json'` for machine-readable |
 | `outputFile` | — | Write output to a file instead of stdout |
 
+Both histogram characters must be single printable characters. If either value is invalid, both fall back to the default `'█'` / `'·'` pairing.
+
 ## How it works
 
 The reporter implements Vitest's `Reporter` interface and hooks into `onTestRunEnd` to collect every completed test case's name, file, and duration. All aggregation and formatting is done by runner-agnostic pure functions in `src/timing-stats.ts`, which are independently unit-tested.

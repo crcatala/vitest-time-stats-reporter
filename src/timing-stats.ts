@@ -26,12 +26,14 @@ export type FormatTimingStatsOptions = {
    * Defaults to "█" (U+2588 Full Block).
    * Other common pairings: "■" (filled square) / "□" (empty square),
    * "▮" (filled square) / "▯" (empty square).
+   * Both bar characters must be single printable characters; an invalid value resets both to defaults.
    */
   histogramFillChar?: string;
   /**
    * Character used for the empty portion of each histogram bar.
    * Defaults to "·" (U+00B7 Middle Dot).
    * Other common pairings: "□" with fill char "■", "▯" with fill char "▮".
+   * Both bar characters must be single printable characters; an invalid value resets both to defaults.
    */
   histogramEmptyChar?: string;
 };
@@ -147,6 +149,12 @@ function formatPercent(value: number): string {
 type DisplayHistogramBin = HistogramBin & { emptyBinCount?: number };
 
 const histogramBarWidth = 30;
+const defaultHistogramFillChar = "\u2588";
+const defaultHistogramEmptyChar = "\u00B7";
+
+function isValidHistogramChar(value: unknown): value is string {
+  return typeof value === "string" && value.length === 1 && !/[\p{C}\p{M}]/u.test(value);
+}
 
 function collapseEmptyBins(histogram: HistogramBin[]): DisplayHistogramBin[] {
   const displayed: DisplayHistogramBin[] = [];
@@ -196,15 +204,17 @@ export function formatTimingStats(
   {
     histogramBins = "collapse",
     color,
-    histogramFillChar = "\u2588",
-    histogramEmptyChar = "\u00B7",
+    histogramFillChar = defaultHistogramFillChar,
+    histogramEmptyChar = defaultHistogramEmptyChar,
   }: FormatTimingStatsOptions = {}
 ): string {
   if (histogramBins !== "collapse" && histogramBins !== "all") {
     throw new Error('histogramBins must be either "collapse" or "all"');
   }
-  const fillChar = histogramFillChar.length ? histogramFillChar : "\u2588";
-  const emptyChar = histogramEmptyChar.length ? histogramEmptyChar : "\u00B7";
+  const [fillChar, emptyChar] =
+    isValidHistogramChar(histogramFillChar) && isValidHistogramChar(histogramEmptyChar)
+      ? [histogramFillChar, histogramEmptyChar]
+      : [defaultHistogramFillChar, defaultHistogramEmptyChar];
 
   const colors = picocolors.createColors(color);
   if (stats.testCount === 0) {
