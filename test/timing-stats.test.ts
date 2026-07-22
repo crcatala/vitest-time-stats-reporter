@@ -130,6 +130,17 @@ describe("createTimingStats", () => {
     );
   });
 
+  it("colors severity-bearing fill bars to match their adjacent statistics", () => {
+    const report = formatTimingStats(createTimingStats(fixture, { slowThresholdMs: 100 }), {
+      color: true,
+    });
+
+    // The 201ms slowest test is red and occupies 49% of total execution time.
+    expect(report).toContain(`\u001B[31m${"█".repeat(15)}\u001B[39m`);
+    // Histogram and fast-split fills remain neutral cyan.
+    expect(report).toContain(`\u001B[36m${"█".repeat(15)}\u001B[39m`);
+  });
+
   it("uses ANSI styling only when colors are enabled", () => {
     const stats = createTimingStats(fixture);
 

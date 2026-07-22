@@ -156,14 +156,17 @@ function isValidHistogramChar(value: unknown): value is string {
   return typeof value === "string" && value.length === 1 && !/[\p{C}\p{M}]/u.test(value);
 }
 
+type Colorize = (text: string) => string;
+
 function formatBar(
   percentage: number,
   fillChar: string,
   emptyChar: string,
-  colors: Colors
+  colors: Colors,
+  fillColor: Colorize = colors.cyan
 ): string {
   const filledBarLength = Math.round((percentage / 100) * histogramBarWidth);
-  return `${colors.cyan(fillChar.repeat(filledBarLength))}${colors.dim(
+  return `${fillColor(fillChar.repeat(filledBarLength))}${colors.dim(
     emptyChar.repeat(histogramBarWidth - filledBarLength)
   )}`;
 }
@@ -200,15 +203,19 @@ function collapseEmptyBins(histogram: HistogramBin[]): DisplayHistogramBin[] {
   return displayed;
 }
 
+function severityColor(durationMs: number, thresholdMs: number, colors: Colors): Colorize {
+  if (durationMs > thresholdMs) return colors.red;
+  if (durationMs > thresholdMs / 2) return colors.yellow;
+  return colors.green;
+}
+
 function colorForDuration(
   durationMs: number,
   thresholdMs: number,
   text: string,
   colors: Colors
 ): string {
-  if (durationMs > thresholdMs) return colors.red(text);
-  if (durationMs > thresholdMs / 2) return colors.yellow(text);
-  return colors.green(text);
+  return severityColor(durationMs, thresholdMs, colors)(text);
 }
 
 export function formatTimingStats(
@@ -303,8 +310,10 @@ export function formatTimingStats(
     const label = `${kind} (${formatPercent(testPercentage)} of tests)`.padEnd(
       widestTimeSplitLabel
     );
+    const fillColor =
+      kind === "slow" ? severityColor(executionPercentage, 50, colors) : colors.cyan;
     lines.push(
-      `  ${label}  ${formatBar(executionPercentage, fillChar, emptyChar, colors)}  ${formatPercent(executionPercentage)} of time`
+      `  ${label}  ${formatBar(executionPercentage, fillChar, emptyChar, colors, fillColor)}  ${formatPercent(executionPercentage)} of time`
     );
   }
 
@@ -315,7 +324,7 @@ export function formatTimingStats(
       const executionPercentage =
         stats.totalExecutionMs === 0 ? 0 : (test.durationMs / stats.totalExecutionMs) * 100;
       lines.push(
-        `  ${colors.dim(`${index + 1}.`.padStart(2))} ${colorForDuration(test.durationMs, stats.slow.thresholdMs, duration, colors)}  ${formatBar(executionPercentage, fillChar, emptyChar, colors)}  ${formatPercent(executionPercentage).padStart(5)}  ${test.file} > ${test.name}`
+        `  ${colors.dim(`${index + 1}.`.padStart(2))} ${colorForDuration(test.durationMs, stats.slow.thresholdMs, duration, colors)}  ${formatBar(executionPercentage, fillChar, emptyChar, colors, severityColor(test.durationMs, stats.slow.thresholdMs, colors))}  ${formatPercent(executionPercentage).padStart(5)}  ${test.file} > ${test.name}`
       );
     }
   }
