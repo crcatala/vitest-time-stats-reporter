@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Added
+- Visualize execution-time concentration in bar charts (#10)
+- Show execution time split durations (#10)
+- Color execution-time bar fills by severity (#10)
+
+### Fixed
+- Correct execution time split edge cases (#10)
+- Detect absolute test file paths across platforms (#9)
+- Relativize absolute test file paths in slowest-tests display (#9)
+
 ## [0.3.0] - 2026-07-22
 
 ### Added
