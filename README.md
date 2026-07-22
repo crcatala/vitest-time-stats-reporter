@@ -24,6 +24,7 @@ export default defineConfig({
         binSizeMs: 100,
         slowThresholdMs: 500,
         slowestTestsCount: 5,
+        histogramBins: 'collapse',
       }],
     ],
   },
@@ -35,19 +36,30 @@ export default defineConfig({
 The reporter appends a compact summary after the default reporter's output:
 
 ```
-Time Stats: 42 tests; 12.34s total test execution
+Time Stats: 42 tests; 6.78s total test execution (2 slow)
+
 Duration distribution:
-    0-100ms  ████████████████████    62%  26
- 100-200ms  ████████                24%  10
- 200-300ms  ████                    10%  4
- 300-400ms  ██                       5%  2
-Percentiles: p50 80ms | p90 280ms | p99 450ms | max 890ms
-Slow tests: 3/42 over 500ms (7% of tests; 42% of execution time)
+    0-100ms  ███████████████████···········    62%  26
+  100-200ms  ███████·······················    24%  10
+  200-300ms  ███···························   9.5%   4
+  300-800ms  ······························   0.0%   0 (5 empty bins)
+  800-900ms  █·····························   4.8%   2
+
+Percentiles:
+  p50   80ms
+  p90  280ms
+  p99  890ms
+  max  890ms
+
+Slow tests: 2/42 over 500ms (4.8% of tests; 26% of execution time)
+
 Slowest tests:
   1.   890ms  tests/auth.test.ts > Auth > login with invalid credentials retries
-  2.   720ms  tests/db.test.ts > Database > migration rolls back on error
-  3.   650ms  tests/api.test.ts > API > rate limiter blocks after 100 requests
+  2.   890ms  tests/db.test.ts > Database > migration rolls back on error
+  3.   280ms  tests/api.test.ts > API > rate limiter blocks after 100 requests
 ```
+
+Headers, populated histogram bars, durations, and slow-test concentration are styled when the terminal supports ANSI color. Text written through `outputFile` stays unstyled. By default, runs of two or more empty histogram bins are collapsed into one range; use `histogramBins: 'all'` to render each bin.
 
 ### JSON / agent output
 
@@ -71,6 +83,7 @@ The JSON schema is versioned (`schemaVersion: 1`) and includes all fields from t
 | `binSizeMs` | 100 | Width of each histogram bin in milliseconds |
 | `slowThresholdMs` | 500 | Tests above this duration are considered "slow" |
 | `slowestTestsCount` | 5 | Number of slowest tests to rank |
+| `histogramBins` | `'collapse'` | `'collapse'` combines runs of empty bins; `'all'` renders every bin |
 | `output` | `'text'` | `'text'` for terminal output, `'json'` for machine-readable |
 | `outputFile` | — | Write output to a file instead of stdout |
 

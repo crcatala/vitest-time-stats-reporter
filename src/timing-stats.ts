@@ -1,13 +1,26 @@
+import picocolors from "picocolors";
+
+type Colors = ReturnType<typeof picocolors.createColors>;
+
 export type TimedTest = {
   name: string;
   file: string;
   durationMs: number;
 };
 
+export type HistogramBins = "collapse" | "all";
+
 export type TimingStatsOptions = {
   binSizeMs?: number;
   slowThresholdMs?: number;
   slowestTestsCount?: number;
+};
+
+export type FormatTimingStatsOptions = {
+  /** Whether empty histogram bins are collapsed into ranges or shown individually. */
+  histogramBins?: HistogramBins;
+  /** Enable ANSI styles. Defaults to the terminal's detected color support. */
+  color?: boolean;
 };
 
 export type HistogramBin = {
@@ -118,36 +131,131 @@ function formatPercent(value: number): string {
   return `${value.toFixed(value < 10 ? 1 : 0)}%`;
 }
 
-export function formatTimingStats(stats: TimingStats): string {
-  if (stats.testCount === 0) return "\nTime Stats: no completed test cases were reported.\n";
+type DisplayHistogramBin = HistogramBin & { emptyBinCount?: number };
 
+const histogramBarWidth = 30;
+
+function collapseEmptyBins(histogram: HistogramBin[]): DisplayHistogramBin[] {
+  const displayed: DisplayHistogramBin[] = [];
+
+  for (let index = 0; index < histogram.length; ) {
+    const bin = histogram[index]!;
+    if (bin.count !== 0) {
+      displayed.push(bin);
+      index += 1;
+      continue;
+    }
+
+    let endIndex = index + 1;
+    while (histogram[endIndex]?.count === 0) endIndex += 1;
+
+    const emptyBinCount = endIndex - index;
+    if (emptyBinCount === 1) {
+      displayed.push(bin);
+    } else {
+      displayed.push({
+        startMs: bin.startMs,
+        endMs: histogram[endIndex - 1]!.endMs,
+        count: 0,
+        percentage: 0,
+        emptyBinCount,
+      });
+    }
+    index = endIndex;
+  }
+
+  return displayed;
+}
+
+function colorForDuration(
+  durationMs: number,
+  thresholdMs: number,
+  text: string,
+  colors: Colors
+): string {
+  if (durationMs > thresholdMs) return colors.red(text);
+  if (durationMs > thresholdMs / 2) return colors.yellow(text);
+  return colors.green(text);
+}
+
+export function formatTimingStats(
+  stats: TimingStats,
+  { histogramBins = "collapse", color }: FormatTimingStatsOptions = {}
+): string {
+  if (histogramBins !== "collapse" && histogramBins !== "all") {
+    throw new Error('histogramBins must be either "collapse" or "all"');
+  }
+
+  const colors = picocolors.createColors(color);
+  if (stats.testCount === 0) {
+    return `\n${colors.bold("Time Stats:")} no completed test cases were reported.\n`;
+  }
+
+  const histogram: DisplayHistogramBin[] =
+    histogramBins === "all" ? stats.histogram : collapseEmptyBins(stats.histogram);
   const widestBinLabel = Math.max(
-    ...stats.histogram.map((bin) => `${bin.startMs}-${bin.endMs}ms`.length)
+    ...histogram.map((bin) => `${bin.startMs}-${bin.endMs}ms`.length)
   );
+  const widestCount = Math.max(...histogram.map((bin) => String(bin.count).length));
+  const percentileRows = [
+    ["p50", stats.percentiles.p50],
+    ["p90", stats.percentiles.p90],
+    ["p99", stats.percentiles.p99],
+    ["max", stats.percentiles.max],
+  ] as const;
+  const widestPercentile = Math.max(
+    ...percentileRows.map(([, durationMs]) => formatMilliseconds(durationMs).length)
+  );
+  const slowBadge = `${stats.slow.count} slow`;
+  const summary = `${stats.testCount} tests; ${formatMilliseconds(stats.totalExecutionMs)} total test execution`;
   const lines = [
     "",
-    `Time Stats: ${stats.testCount} tests; ${formatMilliseconds(stats.totalExecutionMs)} total test execution`,
-    "Duration distribution:",
+    `${colors.bold("Time Stats:")} ${summary} ${colorForDuration(
+      stats.slow.executionPercentage,
+      50,
+      `(${slowBadge})`,
+      colors
+    )}`,
+    "",
+    colors.bold("Duration distribution:"),
   ];
 
-  for (const bin of stats.histogram) {
+  for (const bin of histogram) {
     const label = `${bin.startMs}-${bin.endMs}ms`.padStart(widestBinLabel);
-    const bar = "█".repeat(Math.round((bin.percentage / 100) * 24)) || "·";
+    const filledBarLength = Math.round((bin.percentage / 100) * histogramBarWidth);
+    const bar = `${colors.cyan("█".repeat(filledBarLength))}${colors.dim(
+      "·".repeat(histogramBarWidth - filledBarLength)
+    )}`;
+    const percentage = formatPercent(bin.percentage).padStart(5);
+    const binSuffix = bin.emptyBinCount ? colors.dim(` (${bin.emptyBinCount} empty bins)`) : "";
     lines.push(
-      `  ${label}  ${bar.padEnd(24)}  ${formatPercent(bin.percentage).padStart(5)}  ${bin.count}`
+      `  ${label}  ${bar}  ${bin.count === 0 ? colors.dim(percentage) : colors.green(percentage)}  ${String(bin.count).padStart(widestCount)}${binSuffix}`
     );
   }
 
-  lines.push(
-    `Percentiles: p50 ${formatMilliseconds(stats.percentiles.p50)} | p90 ${formatMilliseconds(stats.percentiles.p90)} | p99 ${formatMilliseconds(stats.percentiles.p99)} | max ${formatMilliseconds(stats.percentiles.max)}`,
-    `Slow tests: ${stats.slow.count}/${stats.testCount} over ${formatMilliseconds(stats.slow.thresholdMs)} (${formatPercent(stats.slow.percentage)} of tests; ${formatPercent(stats.slow.executionPercentage)} of execution time)`
-  );
+  lines.push("", colors.bold("Percentiles:"));
+  for (const [label, durationMs] of percentileRows) {
+    const duration = formatMilliseconds(durationMs).padStart(widestPercentile);
+    lines.push(
+      `  ${colors.dim(label.padEnd(3))}  ${colorForDuration(
+        durationMs,
+        stats.slow.thresholdMs,
+        duration,
+        colors
+      )}`
+    );
+  }
+
+  const slowSummary = `${stats.slow.count}/${stats.testCount} over ${formatMilliseconds(stats.slow.thresholdMs)} (${formatPercent(stats.slow.percentage)} of tests; ${formatPercent(stats.slow.executionPercentage)} of execution time)`;
+  const slowMessage = `${colors.bold("Slow tests:")} ${slowSummary}`;
+  lines.push("", colorForDuration(stats.slow.executionPercentage, 50, slowMessage, colors));
 
   if (stats.slowest.length > 0) {
-    lines.push("Slowest tests:");
+    lines.push("", colors.bold("Slowest tests:"));
     for (const [index, test] of stats.slowest.entries()) {
+      const duration = formatMilliseconds(test.durationMs).padStart(7);
       lines.push(
-        `  ${index + 1}. ${formatMilliseconds(test.durationMs).padStart(7)}  ${test.file} > ${test.name}`
+        `  ${colors.dim(`${index + 1}.`.padStart(2))} ${colorForDuration(test.durationMs, stats.slow.thresholdMs, duration, colors)}  ${test.file} > ${test.name}`
       );
     }
   }

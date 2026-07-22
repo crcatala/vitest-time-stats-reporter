@@ -4,16 +4,18 @@ import type { Reporter, TestModule } from "vitest/node";
 import {
   createTimingStats,
   formatTimingStats,
+  type FormatTimingStatsOptions,
   type TimedTest,
   type TimingStatsOptions,
 } from "./timing-stats.js";
 
-export type TimeStatsReporterOptions = TimingStatsOptions & {
-  /** `text` is for terminals; `json` is a compact machine/agent-readable summary. */
-  output?: "text" | "json";
-  /** Write the report to a separate artifact rather than the shared reporter stream. */
-  outputFile?: string;
-};
+export type TimeStatsReporterOptions = TimingStatsOptions &
+  Pick<FormatTimingStatsOptions, "histogramBins"> & {
+    /** `text` is for terminals; `json` is a compact machine/agent-readable summary. */
+    output?: "text" | "json";
+    /** Write the report to a separate artifact rather than the shared reporter stream. */
+    outputFile?: string;
+  };
 
 /**
  * An additive Vitest reporter: configure it alongside `default`, `verbose`,
@@ -45,7 +47,10 @@ export default class TimeStatsReporter implements Reporter {
     const output =
       this.options.output === "json"
         ? `${JSON.stringify({ schemaVersion: 1, kind: "vitest-time-stats", ...stats }, (_key, value) => (typeof value === "number" ? Math.round(value * 10) / 10 : value))}\n`
-        : formatTimingStats(stats);
+        : formatTimingStats(stats, {
+            histogramBins: this.options.histogramBins,
+            color: this.options.outputFile ? false : undefined,
+          });
 
     if (this.options.outputFile) {
       mkdirSync(dirname(this.options.outputFile), { recursive: true });
