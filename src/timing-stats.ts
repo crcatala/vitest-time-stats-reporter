@@ -156,6 +156,18 @@ function isValidHistogramChar(value: unknown): value is string {
   return typeof value === "string" && value.length === 1 && !/[\p{C}\p{M}]/u.test(value);
 }
 
+function formatBar(
+  percentage: number,
+  fillChar: string,
+  emptyChar: string,
+  colors: Colors
+): string {
+  const filledBarLength = Math.round((percentage / 100) * histogramBarWidth);
+  return `${colors.cyan(fillChar.repeat(filledBarLength))}${colors.dim(
+    emptyChar.repeat(histogramBarWidth - filledBarLength)
+  )}`;
+}
+
 function collapseEmptyBins(histogram: HistogramBin[]): DisplayHistogramBin[] {
   const displayed: DisplayHistogramBin[] = [];
 
@@ -252,10 +264,7 @@ export function formatTimingStats(
 
   for (const bin of histogram) {
     const label = `${bin.startMs}-${bin.endMs}ms`.padStart(widestBinLabel);
-    const filledBarLength = Math.round((bin.percentage / 100) * histogramBarWidth);
-    const bar = `${colors.cyan(fillChar.repeat(filledBarLength))}${colors.dim(
-      emptyChar.repeat(histogramBarWidth - filledBarLength)
-    )}`;
+    const bar = formatBar(bin.percentage, fillChar, emptyChar, colors);
     const percentage = formatPercent(bin.percentage).padStart(5);
     const binSuffix = bin.emptyBinCount ? colors.dim(` (${bin.emptyBinCount} empty bins)`) : "";
     lines.push(
@@ -280,12 +289,33 @@ export function formatTimingStats(
   const slowMessage = `${colors.bold("Slow tests:")} ${slowSummary}`;
   lines.push("", colorForDuration(stats.slow.executionPercentage, 50, slowMessage, colors));
 
+  const timeSplitRows = [
+    ["slow", stats.slow.percentage, stats.slow.executionPercentage],
+    ["fast", 100 - stats.slow.percentage, 100 - stats.slow.executionPercentage],
+  ] as const;
+  const widestTimeSplitLabel = Math.max(
+    ...timeSplitRows.map(
+      ([kind, testPercentage]) => `${kind} (${formatPercent(testPercentage)} of tests)`.length
+    )
+  );
+  lines.push("", colors.bold("Execution time split:"));
+  for (const [kind, testPercentage, executionPercentage] of timeSplitRows) {
+    const label = `${kind} (${formatPercent(testPercentage)} of tests)`.padEnd(
+      widestTimeSplitLabel
+    );
+    lines.push(
+      `  ${label}  ${formatBar(executionPercentage, fillChar, emptyChar, colors)}  ${formatPercent(executionPercentage)} of time`
+    );
+  }
+
   if (stats.slowest.length > 0) {
-    lines.push("", colors.bold("Slowest tests:"));
+    lines.push("", colors.bold("Slowest tests' share of total execution:"));
     for (const [index, test] of stats.slowest.entries()) {
       const duration = formatMilliseconds(test.durationMs).padStart(7);
+      const executionPercentage =
+        stats.totalExecutionMs === 0 ? 0 : (test.durationMs / stats.totalExecutionMs) * 100;
       lines.push(
-        `  ${colors.dim(`${index + 1}.`.padStart(2))} ${colorForDuration(test.durationMs, stats.slow.thresholdMs, duration, colors)}  ${test.file} > ${test.name}`
+        `  ${colors.dim(`${index + 1}.`.padStart(2))} ${colorForDuration(test.durationMs, stats.slow.thresholdMs, duration, colors)}  ${formatBar(executionPercentage, fillChar, emptyChar, colors)}  ${formatPercent(executionPercentage).padStart(5)}  ${test.file} > ${test.name}`
       );
     }
   }

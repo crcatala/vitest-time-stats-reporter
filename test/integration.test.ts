@@ -38,7 +38,8 @@ describe("subprocess integration", () => {
     expect(report).toContain("max");
     expect(report).toContain("Slow tests:");
     expect(report).toContain("of execution time");
-    expect(report).toContain("Slowest tests:");
+    expect(report).toContain("Execution time split:");
+    expect(report).toContain("Slowest tests' share of total execution:");
     expect(report).toContain("fixture/distribution.fixture.test.ts");
   });
 

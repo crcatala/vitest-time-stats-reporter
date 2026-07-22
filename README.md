@@ -53,10 +53,14 @@ Percentiles:
 
 Slow tests: 2/42 over 500ms (4.8% of tests; 26% of execution time)
 
-Slowest tests:
-  1.   890ms  tests/auth.test.ts > Auth > login with invalid credentials retries
-  2.   890ms  tests/db.test.ts > Database > migration rolls back on error
-  3.   280ms  tests/api.test.ts > API > rate limiter blocks after 100 requests
+Execution time split:
+  slow (4.8% of tests)  ████████····················  26% of time
+  fast (95% of tests)   ██████████████████████········  74% of time
+
+Slowest tests' share of total execution:
+  1.   890ms  ████··························    13%  tests/auth.test.ts > Auth > login with invalid credentials retries
+  2.   890ms  ████··························    13%  tests/db.test.ts > Database > migration rolls back on error
+  3.   280ms  █·····························   4.1%  tests/api.test.ts > API > rate limiter blocks after 100 requests
 ```
 
 Headers, populated histogram bars, durations, and slow-test concentration are styled when the terminal supports ANSI color. Text written through `outputFile` stays unstyled. By default, runs of two or more empty histogram bins are collapsed into one range; use `histogramBins: 'all'` to render each bin.
@@ -84,8 +88,8 @@ The JSON schema is versioned (`schemaVersion: 1`) and includes all fields from t
 | `slowThresholdMs` | 500 | Tests above this duration are considered "slow" |
 | `slowestTestsCount` | 5 | Number of slowest tests to rank |
 | `histogramBins` | `'collapse'` | `'collapse'` combines runs of empty bins; `'all'` renders every bin |
-| `histogramFillChar` | `'█'` | Character for the filled portion of each histogram bar. Common pairings: `'■'` with empty char `'□'`, `'▮'` with empty char `'▯'` |
-| `histogramEmptyChar` | `'·'` | Character for the empty portion of each histogram bar. Common pairings: `'□'` with fill char `'■'`, `'▯'` with fill char `'▮'` |
+| `histogramFillChar` | `'█'` | Character for the filled portion of every bar chart. Common pairings: `'■'` with empty char `'□'`, `'▮'` with empty char `'▯'` |
+| `histogramEmptyChar` | `'·'` | Character for the empty portion of every bar chart. Common pairings: `'□'` with fill char `'■'`, `'▯'` with fill char `'▮'` |
 | `output` | `'text'` | `'text'` for terminal output, `'json'` for machine-readable |
 | `outputFile` | — | Write output to a file instead of stdout |
 
