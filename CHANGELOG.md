@@ -6,10 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Added
+
+- ANSI styling and aligned percentile table for terminal reports
+- `histogramBins` option; defaults to collapsing runs of empty bins and supports `'all'`
+
+### Changed
+
+- Added visual spacing, a slow-test count badge, wider histogram bars, and severity colors to terminal output
+
 ### Fixed
 
 - Fall back to absolute test file paths when reporting with Vitest versions before v4
-
 ## [0.1.0] - 2026-07-21
 
 ### Added
@@ -26,7 +34,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 - Slow-test concentration metrics (count/percentage above threshold, share of execution time)
 - Compact JSON output with versioned schema (`output: 'json'`)
 - File output support via `outputFile` option
-- Zero runtime dependencies
+- Minimal runtime dependency footprint
 - TypeScript-first with full type exports
 
 ### Changed

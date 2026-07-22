@@ -39,14 +39,49 @@ describe("createTimingStats", () => {
         binSizeMs: 100,
         slowThresholdMs: 100,
         slowestTestsCount: 1,
-      })
+      }),
+      { color: false }
     );
 
-    expect(report).toContain("Time Stats: 4 tests; 410ms total test execution");
+    expect(report).toContain("Time Stats: 4 tests; 410ms total test execution (1 slow)");
     expect(report).toContain("0-100ms");
-    expect(report).toContain("Percentiles: p50 99ms | p90 201ms | p99 201ms | max 201ms");
+    expect(report).toContain(
+      ["Percentiles:", "  p50   99ms", "  p90  201ms", "  p99  201ms", "  max  201ms"].join("\n")
+    );
     expect(report).toContain("Slow tests: 1/4 over 100ms");
     expect(report).toContain("1.   201ms  fixture.test.ts > slow");
+    expect(report).toContain("\n\nDuration distribution:");
+    expect(report).toContain("\n\nPercentiles:");
+    expect(report).toContain("\n\nSlowest tests:");
+  });
+
+  it("collapses runs of empty histogram bins by default and can show every bin", () => {
+    const stats = createTimingStats(
+      [
+        { name: "fast", file: "fixture.test.ts", durationMs: 10 },
+        { name: "slow", file: "fixture.test.ts", durationMs: 500 },
+      ],
+      { binSizeMs: 100 }
+    );
+
+    const collapsed = formatTimingStats(stats, { color: false });
+    expect(collapsed).toContain("100-500ms");
+    expect(collapsed).toContain("(4 empty bins)");
+    expect(collapsed).not.toContain("100-200ms");
+
+    const allBins = formatTimingStats(stats, { histogramBins: "all", color: false });
+    expect(allBins).toContain("100-200ms");
+    expect(allBins).toContain("200-300ms");
+    expect(allBins).toContain("300-400ms");
+    expect(allBins).toContain("400-500ms");
+    expect(allBins).not.toContain("empty bins");
+  });
+
+  it("uses ANSI styling only when colors are enabled", () => {
+    const stats = createTimingStats(fixture);
+
+    expect(formatTimingStats(stats, { color: true })).toContain("\u001B[1mTime Stats:");
+    expect(formatTimingStats(stats, { color: false })).not.toContain("\u001B[");
   });
 
   it("rejects invalid configuration and handles no completed tests", () => {
@@ -54,10 +89,15 @@ describe("createTimingStats", () => {
       "binSizeMs must be greater than 0"
     );
     expect(() =>
+      formatTimingStats(createTimingStats([]), { histogramBins: "hidden" as never })
+    ).toThrow('histogramBins must be either "collapse" or "all"');
+    expect(() =>
       createTimingStats([{ name: "long", file: "fixture.test.ts", durationMs: 300_000 }], {
         binSizeMs: 1,
       })
     ).toThrow("binSizeMs would produce 300001 histogram bins");
-    expect(formatTimingStats(createTimingStats([]))).toContain("no completed test cases");
+    expect(formatTimingStats(createTimingStats([]), { color: false })).toContain(
+      "no completed test cases"
+    );
   });
 });

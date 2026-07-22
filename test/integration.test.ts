@@ -1,15 +1,22 @@
 import { execSync } from "node:child_process";
 import { existsSync, readFileSync, unlinkSync } from "node:fs";
 import { resolve } from "node:path";
+import { stripVTControlCharacters } from "node:util";
 import { describe, expect, it } from "vitest";
 
 const projectDir = resolve(import.meta.dirname, "..");
 const jsonOutputFile = resolve(projectDir, "reports", "time-stats.json");
+const textOutputFile = resolve(projectDir, "reports", "time-stats.txt");
 
-function runVitest(configFile: string): { stdout: string } {
+function runVitest(configFile: string, env?: NodeJS.ProcessEnv): { stdout: string } {
+  const childEnv = { ...process.env, ...env };
+  for (const [key, value] of Object.entries(childEnv)) {
+    if (value === undefined) delete childEnv[key];
+  }
+
   const stdout = execSync(
     `"${resolve(projectDir, "node_modules", ".bin", "vitest")}" run --config "${resolve(projectDir, configFile)}"`,
-    { cwd: projectDir, encoding: "utf-8", timeout: 30_000 }
+    { cwd: projectDir, encoding: "utf-8", env: childEnv, timeout: 30_000 }
   );
   return { stdout };
 }
@@ -17,20 +24,74 @@ function runVitest(configFile: string): { stdout: string } {
 describe("subprocess integration", () => {
   it("appends a terminal report alongside the default reporter", () => {
     const { stdout } = runVitest("vitest.demo.config.ts");
+    const report = stripVTControlCharacters(stdout);
 
     // The fixture has 3 tests with widely-spaced sleeps.
     // We assert structural shape, not exact wall-clock timings.
-    expect(stdout).toContain("Time Stats: 3 tests;");
-    expect(stdout).toContain("total test execution");
-    expect(stdout).toContain("Duration distribution:");
-    expect(stdout).toContain("Percentiles: p50");
-    expect(stdout).toContain("p90");
-    expect(stdout).toContain("p99");
-    expect(stdout).toContain("max");
-    expect(stdout).toContain("Slow tests:");
-    expect(stdout).toContain("of execution time");
-    expect(stdout).toContain("Slowest tests:");
-    expect(stdout).toContain("fixture/distribution.fixture.test.ts");
+    expect(report).toContain("Time Stats: 3 tests;");
+    expect(report).toContain("total test execution");
+    expect(report).toContain("Duration distribution:");
+    expect(report).toContain("Percentiles:");
+    expect(report).toContain("p50");
+    expect(report).toContain("p90");
+    expect(report).toContain("p99");
+    expect(report).toContain("max");
+    expect(report).toContain("Slow tests:");
+    expect(report).toContain("of execution time");
+    expect(report).toContain("Slowest tests:");
+    expect(report).toContain("fixture/distribution.fixture.test.ts");
+  });
+
+  it("writes an unstyled text artifact", () => {
+    if (existsSync(textOutputFile)) unlinkSync(textOutputFile);
+
+    runVitest("vitest.demo-text-file.config.ts");
+
+    expect(existsSync(textOutputFile)).toBe(true);
+    const report = readFileSync(textOutputFile, "utf-8");
+    expect(report).toBe(stripVTControlCharacters(report));
+    expect(report).toContain("Time Stats: 3 tests;");
+    expect(report).toContain("Percentiles:");
+    expect(report).not.toContain("empty bins");
+
+    const histogramBins = [...report.matchAll(/^\s*(\d+)-(\d+)ms\s+.*\s(\d+)\s*$/gm)].map(
+      ([, startMs, endMs, count]) => ({
+        startMs: Number(startMs),
+        endMs: Number(endMs),
+        count: Number(count),
+      })
+    );
+    expect(
+      histogramBins.some(
+        (bin, index) =>
+          bin.count === 0 &&
+          histogramBins[index + 1]?.count === 0 &&
+          bin.endMs === histogramBins[index + 1]?.startMs
+      )
+    ).toBe(true);
+  });
+
+  it("honors automatic color environment controls", () => {
+    const redirected = runVitest("vitest.demo-color.config.ts", {
+      CI: undefined,
+      FORCE_COLOR: undefined,
+      NO_COLOR: undefined,
+    });
+    expect(redirected.stdout).not.toContain("\u001B[");
+
+    const colored = runVitest("vitest.demo-color.config.ts", {
+      CI: undefined,
+      FORCE_COLOR: "1",
+      NO_COLOR: undefined,
+    });
+    expect(colored.stdout).toContain("\u001B[1mTime Stats:");
+
+    const noColor = runVitest("vitest.demo-color.config.ts", {
+      CI: undefined,
+      FORCE_COLOR: undefined,
+      NO_COLOR: "1",
+    });
+    expect(noColor.stdout).not.toContain("\u001B[");
   });
 
   it("writes a valid JSON artifact in JSON mode", () => {

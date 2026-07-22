@@ -43,8 +43,13 @@ try {
   }
 
   execFileSync("tar", ["-xzf", tarball, "-C", tempDir]);
+  const packageDir = join(tempDir, "package");
+  execFileSync("npm", ["install", "--ignore-scripts", "--omit=dev", "--no-audit", "--no-fund"], {
+    cwd: packageDir,
+    stdio: "inherit",
+  });
   for (const target of exports) {
-    const packedTarget = pathToFileURL(join(tempDir, "package", target.slice(2))).href;
+    const packedTarget = pathToFileURL(join(packageDir, target.slice(2))).href;
     execFileSync(
       process.execPath,
       ["--input-type=module", "--eval", `await import(${JSON.stringify(packedTarget)})`],
