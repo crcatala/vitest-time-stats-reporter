@@ -1,23 +1,5 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:recommended"],
-  "semanticCommits": "enabled",
-  "schedule": ["before 9am on Monday"],
-  "packageRules": [
-    {
-      "matchUpdateTypes": ["minor", "patch"],
-      "groupName": "minor and patch dependencies",
-      "groupSlug": "minor-patch"
-    },
-    {
-      "matchPackageNames": ["typescript", "vitest"],
-      "excludeFromGroup": true
-    }
-  ],
-  "lockFileMaintenance": {
-    "enabled": true,
-    "schedule": ["before 9am on Monday"]
-  },
-  "osvVulnerabilityAlerts": true,
-  "minimumReleaseAge": "7 days"
+  "extends": ["github>crcatala/renovate-config"],
+  "semanticCommits": "enabled"
 }
