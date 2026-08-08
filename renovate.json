@@ -1,7 +1,5 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [
-    "github>crcatala/renovate-config"
-  ],
+  "extends": ["github>crcatala/renovate-config"],
   "semanticCommits": "enabled"
 }
