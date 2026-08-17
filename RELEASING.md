@@ -12,7 +12,7 @@ to automate version bumps, changelog management, git tagging, GitHub releases, a
 - A GitHub token available as `GITHUB_TOKEN` with repository **Contents: read and write**
   permission, so release-it can create the GitHub Release. Alternatively, authenticate
   with `gh auth login`.
-- Node.js 20.19+ or 22.13+.
+- Node.js 22.21+ or 24+.
 
 The package is public and is published as `vitest-time-stats-reporter`.
 
