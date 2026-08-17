@@ -25,7 +25,7 @@
   },
   "homepage": "https://github.com/crcatala/vitest-time-stats-reporter#readme",
   "engines": {
-    "node": "^20.19.0 || ^22.13.0 || >=24.0.0"
+    "node": "^22.21.0 || >=24.0.0"
   },
   "publishConfig": {
     "access": "public"
@@ -60,7 +60,7 @@
     "@biomejs/biome": "^2.5.5",
     "@release-it/keep-a-changelog": "^8.0.0",
     "@types/node": "^24.0.0",
-    "release-it": "^20.2.1",
+    "release-it": "^21.0.1",
     "typescript": "^7.0.0",
     "vitest": "^4.1.10"
   },
