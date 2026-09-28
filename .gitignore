@@ -37,3 +37,6 @@ coverage/
 # Reports
 reports/*
 !reports/.gitkeep
+
+# Vitest cache and reporter output
+.vitest/
