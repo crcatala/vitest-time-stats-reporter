@@ -1,4 +1,4 @@
-# vitest-time-stats-reporter
+<h1><img src="assets/icon.png" width="40" height="40" align="top" alt="" /> vitest-time-stats-reporter</h1>
 
 [![npm version](https://img.shields.io/npm/v/vitest-time-stats-reporter?style=flat-square)](https://www.npmjs.com/package/vitest-time-stats-reporter)
 [![CI](https://img.shields.io/github/actions/workflow/status/crcatala/vitest-time-stats-reporter/ci.yml?branch=main&style=flat-square&label=CI)](https://github.com/crcatala/vitest-time-stats-reporter/actions/workflows/ci.yml)
